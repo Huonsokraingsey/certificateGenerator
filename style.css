@@ -1,0 +1,305 @@
+/**
+ * Enterprise Certificate Engine - Stylesheet
+ * Dark theme dashboard with glass morphism effects
+ */
+
+/* ============================================
+   CSS CUSTOM PROPERTIES
+   ============================================ */
+:root {
+    /* Colors */
+    --bg-primary: #0B0F19;
+    --bg-secondary: #151B2B;
+    --bg-tertiary: #1E293B;
+    --border-color: #334155;
+    --text-primary: #ffffff;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    
+    /* Accents */
+    --accent-primary: #6366F1;
+    --accent-secondary: #8B5CF6;
+    --accent-success: #10B981;
+    --accent-danger: #EF4444;
+    --accent-warning: #F59E0B;
+    
+    /* Dimensions */
+    --sidebar-width: 24rem;
+    --toolbar-height: 4rem;
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.3);
+}
+
+/* ============================================
+   BASE STYLES
+   ============================================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+/* Glass Morphism Panel */
+.glass-panel {
+    background: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Gradient Text */
+.gradient-text {
+    background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Checkerboard Background (for transparency) */
+.checkerboard {
+    background-color: var(--bg-primary);
+    background-image: 
+        linear-gradient(45deg, var(--bg-secondary) 25%, transparent 25%),
+        linear-gradient(-45deg, var(--bg-secondary) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, var(--bg-secondary) 75%),
+        linear-gradient(-45deg, transparent 75%, var(--bg-secondary) 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+}
+
+/* ============================================
+   DRAGGABLE TAG COMPONENT
+   ============================================ */
+.draggable-tag {
+    cursor: move;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    transition: transform 0.1s ease, box-shadow 0.2s ease;
+    touch-action: none;
+}
+
+.draggable-tag:hover {
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.3);
+}
+
+.draggable-tag.dragging {
+    opacity: 0.85;
+    z-index: 1000;
+    transform: translate(-50%, -50%) scale(1.05);
+    box-shadow: var(--shadow-glow);
+}
+
+/* ============================================
+   OFFSCREEN RENDERER (Hidden Full-View Capture)
+   ============================================ */
+.offscreen-renderer {
+    position: absolute;
+    left: -9999px;
+    top: -9999px;
+    width: 3508px;  /* A4 at 300 DPI */
+    height: 2480px; /* A4 at 300 DPI */
+    overflow: hidden;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.offscreen-renderer > div {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+}
+
+/* ============================================
+   SCROLLBAR STYLING
+   ============================================ */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+/* Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) var(--bg-primary);
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+/* ============================================
+   FORM ELEMENTS
+   ============================================ */
+input[type="file"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+input[type="color"] {
+    -webkit-appearance: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    overflow: hidden;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+input[type="color"]::-webkit-color-swatch {
+    border: none;
+    border-radius: 0.375rem;
+}
+
+/* ============================================
+   KHMER FONT SUPPORT
+   ============================================ */
+.font-khmer {
+    font-family: 'Noto Sans Khmer', 'Noto Serif Khmer', sans-serif;
+}
+
+/* Khmer text rendering optimization */
+:lang(km),
+[lang="km"] {
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "kern" 1;
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+@media (max-width: 1024px) {
+    .app-container {
+        flex-direction: column;
+    }
+    
+    aside {
+        width: 100%;
+        max-height: 50vh;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+    }
+}
+
+@media (max-width: 640px) {
+    .glass-panel {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Focus styles */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+}
+
+/* ============================================
+   UTILITY CLASSES FOR TAILWIND EXTENSION
+   ============================================ */
+.bg-dark-900 { background-color: var(--bg-primary); }
+.bg-dark-800 { background-color: var(--bg-secondary); }
+.bg-dark-700 { background-color: var(--bg-tertiary); }
+.bg-dark-600 { background-color: var(--border-color); }
+.bg-dark-500 { background-color: var(--text-muted); }
+
+.border-dark-600 { border-color: var(--border-color); }
+.border-dark-500 { border-color: var(--text-muted); }
+
+.text-accent-primary { color: var(--accent-primary); }
+.text-accent-secondary { color: var(--accent-secondary); }
+.text-accent-success { color: var(--accent-success); }
+.text-accent-danger { color: var(--accent-danger); }
+.text-accent-warning { color: var(--accent-warning); }
+
+.bg-accent-primary { background-color: var(--accent-primary); }
+.bg-accent-success { background-color: var(--accent-success); }
+
+.from-accent-primary { --tw-gradient-from: var(--accent-primary); }
+.to-accent-secondary { --tw-gradient-to: var(--accent-secondary); }
