@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SALA Tech Certificate Generator</title>
+    
+    <!-- External Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #0a0e1a;
+            --bg-panel: #111827;
+            --bg-input: #1f2937;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --accent-gold: #C5A059;
+            --accent-navy: #0B1A3A;
+            --border-color: #374151;
+            --success: #10b981;
+            --error: #ef4444;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* Layout */
+        .app-container {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border-color);
+            padding: 2rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-gold), #d4af37);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--accent-navy);
+            font-size: 1.2rem;
+        }
+        
+        .logo-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(to right, var(--accent-gold), #f0d878);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-top: -0.5rem;
+        }
+        
+        /* Form Elements */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        input[type="text"],
+        input[type="date"],
+        textarea {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            width: 100%;
+        }
+        
+        input[type="text"]:focus,
+        input[type="date"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.1);
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+        
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+        
+        .file-input-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            background: var(--bg-input);
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .file-input-label:hover {
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+        }
+        
+        .file-input-label.has-file {
+            border-color: var(--success);
+            color: var(--success);
+            border-style: solid;
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 0.875rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-gold), #d4af37);
+            color: var(--accent-navy);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(197, 160, 89, 0.3);
+        }
+        
+        .btn-secondary {
+            background: var(--bg-input);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+        
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: auto;
+        }
+        
+        .btn-group .btn {
+            flex: 1;
+        }
+        
+        /* Bulk Upload Section */
+        .bulk-section {
+            border-top: 1px solid var(--border-color);
+            padding-top: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .bulk-textarea {
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.8rem;
+            min-height: 120px;
+        }
+        
+        .hint {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+        
+        /* Preview Area */
+        .preview-container {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            overflow: auto;
+            position: relative;
+        }
+        
+        .preview-wrapper {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transform-origin: center;
+            transition: transform 0.3s;
+        }
+        
+        /* Certificate Template */
+        .certificate {
+            width: 1123px;
+            height: 794px;
+            background: #ffffff;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+            box-sizing: border-box;
+        }
+        
+        /* Decorative Elements */
+        .cert-border {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            bottom: 20px;
+            border: 3px solid var(--accent-gold);
+            pointer-events: none;
+        }
+        
+        .cert-border::before {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            right: 8px;
+            bottom: 8px;
+            border: 1px solid var(--accent-navy);
+        }
+        
+        .corner {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--accent-gold);
+        }
+        
+        .corner-tl { top: 15px; left: 15px; border-right: none; border-bottom: none; }
+        .corner-tr { top: 15px; right: 15px; border-left: none; border-bottom: none; }
+        .corner-bl { bottom: 15px; left: 15px; border-right: none; border-top: none; }
+        .corner-br { bottom: 15px; right: 15px; border-left: none; border-top: none; }
+        
+        /* Certificate Content */
+        .cert-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .cert-logo {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            margin-bottom: 1rem;
+            filter: grayscale(100%) brightness(0.2);
+        }
+        
+        .cert-org-name {
+            font-family: 'Inter', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent-navy);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+        
+        .cert-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: var(--accent-navy);
+            margin: 1.5rem 0;
+            letter-spacing: 0.05em;
+        }
+        
+        .cert-subtitle {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            font-style: italic;
+            color: var(--accent-gold);
+            margin-bottom: 2rem;
+        }
+        
+        .cert-content {
+            text-align: center;
+            max-width: 800px;
+            margin: 2rem 0;
+        }
+        
+        .cert-text {
+            font-family: 'Inter', sans-serif;
+            font-size: 1.1rem;
+            color: #4b5563;
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+        }
+        
+        .cert-recipient {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            font-weight: 600;
+            color: var(--accent-navy);
+            margin: 1rem 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--accent-gold);
+            display: inline-block;
+        }
+        
+        .cert-course {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--accent-navy);
+            margin: 1rem 0;
+        }
+        
+        .cert-date {
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            color: #6b7280;
+            margin-top: 2rem;
+        }
+        
+        .cert-footer {
+            position: absolute;
+            bottom: 60px;
+            left: 60px;
+            right: 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        
+        .signature-block {
+            text-align: center;
+        }
+        
+        .signature-line {
+            width: 200px;
+            height: 1px;
+            background: var(--accent-navy);
+            margin-bottom: 0.5rem;
+        }
+        
+        .signature-text {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            color: #4b5563;
+        }
+        
+        .qr-placeholder {
+            width: 100px;
+            height: 100px;
+            border: 2px solid var(--accent-gold);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            color: var(--accent-gold);
+            text-align: center;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 5px,
+                rgba(197, 160, 89, 0.1) 5px,
+                rgba(197, 160, 89, 0.1) 10px
+            );
+        }
+        
+        /* Loading & Progress */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 1rem;
+            z-index: 1000;
+        }
+        
+        .loading-overlay.active {
+            display: flex;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent-gold);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .progress-bar {
+            width: 300px;
+            height: 6px;
+            background: var(--bg-input);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-gold);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .progress-text {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .app-container {
+                grid-template-columns: 320px 1fr;
+            }
+            .certificate {
+                transform: scale(0.6);
+            }
+        }
+        
+        @media (max-width: 900px) {
+            .app-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
+            }
+            .sidebar {
+                max-height: 50vh;
+            }
+            .certificate {
+                transform: scale(0.4);
+            }
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-gold);
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Controls -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">S</div>
+                <div class="logo-text">SALA Tech</div>
+            </div>
+            <p class="subtitle">Certificate Generator</p>
+            
+            <div class="form-group">
+                <label for="recipientName">Recipient Name</label>
+                <input type="text" id="recipientName" placeholder="e.g. John Doe" autocomplete="off">
+            </div>
+            
+            <div class="form-group">
+                <label for="courseTitle">Course / Event Title</label>
+                <input type="text" id="courseTitle" placeholder="e.g. Advanced Web Development" autocomplete="off">
+            </div>
+            
+            <div class="form-group">
+                <label for="achievementDate">Achievement Date</label>
+                <input type="date" id="achievementDate">
+            </div>
+            
+            <div class="form-group">
+                <label for="orgLogo">Organization Logo</label>
+                <div class="file-input-wrapper">
+                    <input type="file" id="orgLogo" accept="image/*">
+                    <label for="orgLogo" class="file-input-label" id="logoLabel">
+                        <span>📁 Choose Logo File</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="generatePDF()">
+                    <span>⬇️</span> Download PDF
+                </button>
+            </div>
+            
+            <div class="bulk-section">
+                <label>Bulk Generation (JSON/CSV)</label>
+                <textarea 
+                    class="bulk-textarea" 
+                    id="bulkData" 
+                    placeholder='[
+  {"name": "Alice Smith", "course": "React Mastery", "date": "2024-03-15"},
+  {"name": "Bob Jones", "course": "Node.js Advanced", "date": "2024-03-16"}
+]'
+                ></textarea>
+                <p class="hint">Paste JSON array or CSV: name,course,date</p>
+                <button class="btn btn-secondary" onclick="processBulkUpload()" style="margin-top: 0.75rem;">
+                    <span>📦</span> Generate Bulk ZIP
+                </button>
+            </div>
+        </aside>
+        
+        <!-- Preview Area -->
+        <main class="preview-container">
+            <div class="preview-wrapper" id="previewWrapper">
+                <div class="certificate" id="certificate">
+                    <div class="cert-border"></div>
+                    <div class="corner corner-tl"></div>
+                    <div class="corner corner-tr"></div>
+                    <div class="corner corner-bl"></div>
+                    <div class="corner corner-br"></div>
+                    
+                    <div class="cert-header">
+                        <img src="" alt="" class="cert-logo" id="certLogo" style="display: none;">
+                        <div class="cert-org-name" id="certOrgName" style="display: none;">SALA TECH</div>
+                        <h1 class="cert-title">Certificate</h1>
+                        <p class="cert-subtitle">of Achievement</p>
+                    </div>
+                    
+                    <div class="cert-content">
+                        <p class="cert-text">This is to certify that</p>
+                        <div class="cert-recipient" id="certRecipient">Recipient Name</div>
+                        <p class="cert-text">has successfully completed</p>
+                        <div class="cert-course" id="certCourse">Course Title</div>
+                        <p class="cert-date" id="certDate">Date</p>
+                    </div>
+                    
+                    <div class="cert-footer">
+                        <div class="signature-block">
+                            <div class="signature-line"></div>
+                            <p class="signature-text">Authorized Signature</p>
+                        </div>
+                        <div class="qr-placeholder">
+                            VERIFY<br>QR CODE
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <p class="progress-text" id="progressText">Generating certificate...</p>
+    </div>
+
+    <script>
+        // State management
+        const state = {
+            recipient: '',
+            course: '',
+            date: '',
+            logo: null,
+            logoDataUrl: null
+        };
+        
+        // Debounce utility
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+        
+        // DOM Elements
+        const inputs = {
+            recipient: document.getElementById('recipientName'),
+            course: document.getElementById('courseTitle'),
+            date: document.getElementById('achievementDate'),
+            logo: document.getElementById('orgLogo'),
+            bulk: document.getElementById('bulkData')
+        };
+        
+        const display = {
+            recipient: document.getElementById('certRecipient'),
+            course: document.getElementById('certCourse'),
+            date: document.getElementById('certDate'),
+            logo: document.getElementById('certLogo'),
+            orgName: document.getElementById('certOrgName'),
+            logoLabel: document.getElementById('logoLabel')
+        };
+        
+        // Update preview with debounce
+        const updatePreview = debounce(() => {
+            state.recipient = inputs.recipient.value || 'Recipient Name';
+            state.course = inputs.course.value || 'Course Title';
+            state.date = inputs.date.value ? formatDate(inputs.date.value) : 'Date';
+            
+            display.recipient.textContent = state.recipient;
+            display.course.textContent = state.course;
+            display.date.textContent = state.date;
+        }, 150);
+        
+        // Format date nicely
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString('en-US', options);
+        }
+        
+        // Event listeners for real-time updates
+        inputs.recipient.addEventListener('input', updatePreview);
+        inputs.course.addEventListener('input', updatePreview);
+        inputs.date.addEventListener('change', updatePreview);
+        
+        // Logo upload handler
+        inputs.logo.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    state.logoDataUrl = event.target.result;
+                    display.logo.src = state.logoDataUrl;
+                    display.logo.style.display = 'block';
+                    display.orgName.style.display = 'block';
+                    display.logoLabel.classList.add('has-file');
+                    display.logoLabel.innerHTML = `<span>✓ ${file.name}</span>`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Generate single PDF
+        async function generatePDF() {
+            const overlay = document.getElementById('loadingOverlay');
+            const cert = document.getElementById('certificate');
+            
+            overlay.classList.add('active');
+            
+            try {
+                // Wait for fonts to load
+                await document.fonts.ready;
+                
+                // Capture with html2canvas
+                const canvas = await html2canvas(cert, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                    width: 1123,
+                    height: 794
+                });
+                
+                // Create PDF (A4 Landscape: 297mm x 210mm)
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({
+                    orientation: 'landscape',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+                
+                const imgData = canvas.toDataURL('image/png');
+                const pdfWidth = 297;
+                const pdfHeight = 210;
+                
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                
+                // Generate filename
+                const fileName = `Certificate_${state.recipient.replace(/\s+/g, '_')}_${Date.now()}.pdf`;
+                pdf.save(fileName);
+                
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                alert('Error generating PDF. Please try again.');
+            } finally {
+                overlay.classList.remove('active');
+            }
+        }
+        
+        // Parse bulk data (JSON or CSV)
+        function parseBulkData(text) {
+            text = text.trim();
+            if (!text) return [];
+            
+            // Try JSON first
+            try {
+                const json = JSON.parse(text);
+                if (Array.isArray(json)) return json;
+            } catch (e) {
+                // Not JSON, try CSV
+            }
+            
+            // Parse CSV
+            const lines = text.split('\n').filter(line => line.trim());
+            if (lines.length < 2) return [];
+            
+            const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+            const results = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',').map(v => v.trim());
+                const obj = {};
+                headers.forEach((header, index) => {
+                    obj[header] = values[index] || '';
+                });
+                results.push(obj);
+            }
+            
+            return results;
+        }
+        
+        // Process bulk upload
+        async function processBulkUpload() {
+            const data = parseBulkData(inputs.bulk.value);
+            
+            if (data.length === 0) {
+                alert('No valid data found. Please check your JSON/CSV format.');
+                return;
+            }
+            
+            if (data.length > 50) {
+                alert('Maximum 50 certificates allowed per batch for performance.');
+                return;
+            }
+            
+            const overlay = document.getElementById('loadingOverlay');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            
+            overlay.classList.add('active');
+            
+            const zip = new JSZip();
+            const folder = zip.folder("certificates");
+            
+            try {
+                for (let i = 0; i < data.length; i++) {
+                    const item = data[i];
+                    const progress = ((i + 1) / data.length) * 100;
+                    
+                    progressFill.style.width = `${progress}%`;
+                    progressText.textContent = `Generating certificate ${i + 1} of ${data.length}...`;
+                    
+                    // Update certificate data
+                    display.recipient.textContent = item.name || item.recipient || 'Unknown';
+                    display.course.textContent = item.course || item.title || 'Course';
+                    display.date.textContent = item.date ? formatDate(item.date) : formatDate(new Date());
+                    
+                    // Small delay to allow DOM update
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                    
+                    // Generate canvas
+                    const canvas = await html2canvas(document.getElementById('certificate'), {
+                        scale: 2,
+                        useCORS: true,
+                        backgroundColor: '#ffffff',
+                        logging: false
+                    });
+                    
+                    // Convert to blob
+                    const blob = await new Promise(resolve => {
+                        canvas.toBlob(resolve, 'image/png');
+                    });
+                    
+                    // Add to ZIP
+                    const fileName = `Certificate_${(item.name || item.recipient || 'Unknown').replace(/\s+/g, '_')}.png`;
+                    folder.file(fileName, blob);
+                }
+                
+                progressText.textContent = 'Creating ZIP archive...';
+                
+                // Generate ZIP
+                const content = await zip.generateAsync({
+                    type: 'blob',
+                    compression: 'DEFLATE',
+                    compressionOptions: { level: 6 }
+                });
+                
+                // Download
+                const zipName = `Certificates_Batch_${Date.now()}.zip`;
+                saveAs(content, zipName);
+                
+                // Reset preview to current form values
+                updatePreview();
+                
+            } catch (error) {
+                console.error('Error in bulk generation:', error);
+                alert('Error generating bulk certificates. Please try again.');
+            } finally {
+                overlay.classList.remove('active');
+                progressFill.style.width = '0%';
+            }
+        }
+        
+        // Initialize with today's date
+        inputs.date.valueAsDate = new Date();
+        updatePreview();
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    generatePDF();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
