@@ -3,913 +3,309 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SALA Tech Certificate Generator</title>
+    <title>Enterprise Certificate Engine</title>
     
     <!-- External Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     
-    <!-- Fonts -->
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Great+Vibes&family=Alex+Brush&family=Allura&family=Cinzel:wght@400;600;700&family=Noto+Sans+Khmer:wght@400;700&family=Noto+Serif+Khmer:wght@400;700&family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
     
-    <style>
-        :root {
-            --bg-dark: #0a0e1a;
-            --bg-panel: #111827;
-            --bg-input: #1f2937;
-            --text-primary: #f9fafb;
-            --text-secondary: #9ca3af;
-            --accent-gold: #C5A059;
-            --accent-navy: #0B1A3A;
-            --border-color: #374151;
-            --success: #10b981;
-            --error: #ef4444;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg-dark);
-            color: var(--text-primary);
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-        
-        /* Layout */
-        .app-container {
-            display: grid;
-            grid-template-columns: 380px 1fr;
-            height: 100vh;
-            overflow: hidden;
-        }
-        
-        /* Sidebar */
-        .sidebar {
-            background: var(--bg-panel);
-            border-right: 1px solid var(--border-color);
-            padding: 2rem;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-        
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 1rem;
-        }
-        
-        .logo-icon {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, var(--accent-gold), #d4af37);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            color: var(--accent-navy);
-            font-size: 1.2rem;
-        }
-        
-        .logo-text {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.5rem;
-            font-weight: 600;
-            background: linear-gradient(to right, var(--accent-gold), #f0d878);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .subtitle {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            margin-top: -0.5rem;
-        }
-        
-        /* Form Elements */
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-        
-        label {
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        
-        input[type="text"],
-        input[type="date"],
-        textarea {
-            background: var(--bg-input);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
-            color: var(--text-primary);
-            font-family: inherit;
-            font-size: 0.95rem;
-            transition: all 0.2s;
-            width: 100%;
-        }
-        
-        input[type="text"]:focus,
-        input[type="date"]:focus,
-        textarea:focus {
-            outline: none;
-            border-color: var(--accent-gold);
-            box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.1);
-        }
-        
-        textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-        
-        .file-input-wrapper {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
-            width: 100%;
-        }
-        
-        .file-input-wrapper input[type=file] {
-            position: absolute;
-            left: -9999px;
-        }
-        
-        .file-input-label {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1rem;
-            background: var(--bg-input);
-            border: 2px dashed var(--border-color);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
-        
-        .file-input-label:hover {
-            border-color: var(--accent-gold);
-            color: var(--accent-gold);
-        }
-        
-        .file-input-label.has-file {
-            border-color: var(--success);
-            color: var(--success);
-            border-style: solid;
-        }
-        
-        /* Buttons */
-        .btn {
-            padding: 0.875rem 1.5rem;
-            border: none;
-            border-radius: 8px;
-            font-family: inherit;
-            font-weight: 600;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            width: 100%;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, var(--accent-gold), #d4af37);
-            color: var(--accent-navy);
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(197, 160, 89, 0.3);
-        }
-        
-        .btn-secondary {
-            background: var(--bg-input);
-            color: var(--text-primary);
-            border: 1px solid var(--border-color);
-        }
-        
-        .btn-secondary:hover {
-            background: var(--border-color);
-        }
-        
-        .btn-success {
-            background: var(--success);
-            color: white;
-        }
-        
-        .btn-group {
-            display: flex;
-            gap: 0.75rem;
-            margin-top: auto;
-        }
-        
-        .btn-group .btn {
-            flex: 1;
-        }
-        
-        /* Bulk Upload Section */
-        .bulk-section {
-            border-top: 1px solid var(--border-color);
-            padding-top: 1.5rem;
-            margin-top: 1rem;
-        }
-        
-        .bulk-textarea {
-            font-family: 'Monaco', 'Menlo', monospace;
-            font-size: 0.8rem;
-            min-height: 120px;
-        }
-        
-        .hint {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            margin-top: 0.25rem;
-        }
-        
-        /* Preview Area */
-        .preview-container {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-            overflow: auto;
-            position: relative;
-        }
-        
-        .preview-wrapper {
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            transform-origin: center;
-            transition: transform 0.3s;
-        }
-        
-        /* Certificate Template */
-        .certificate {
-            width: 1123px;
-            height: 794px;
-            background: #ffffff;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 60px;
-            box-sizing: border-box;
-        }
-        
-        /* Decorative Elements */
-        .cert-border {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            right: 20px;
-            bottom: 20px;
-            border: 3px solid var(--accent-gold);
-            pointer-events: none;
-        }
-        
-        .cert-border::before {
-            content: '';
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            right: 8px;
-            bottom: 8px;
-            border: 1px solid var(--accent-navy);
-        }
-        
-        .corner {
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            border: 3px solid var(--accent-gold);
-        }
-        
-        .corner-tl { top: 15px; left: 15px; border-right: none; border-bottom: none; }
-        .corner-tr { top: 15px; right: 15px; border-left: none; border-bottom: none; }
-        .corner-bl { bottom: 15px; left: 15px; border-right: none; border-top: none; }
-        .corner-br { bottom: 15px; right: 15px; border-left: none; border-top: none; }
-        
-        /* Certificate Content */
-        .cert-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        
-        .cert-logo {
-            width: 80px;
-            height: 80px;
-            object-fit: contain;
-            margin-bottom: 1rem;
-            filter: grayscale(100%) brightness(0.2);
-        }
-        
-        .cert-org-name {
-            font-family: 'Inter', sans-serif;
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--accent-navy);
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            margin-bottom: 0.5rem;
-        }
-        
-        .cert-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 3.5rem;
-            font-weight: 700;
-            color: var(--accent-navy);
-            margin: 1.5rem 0;
-            letter-spacing: 0.05em;
-        }
-        
-        .cert-subtitle {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.3rem;
-            font-style: italic;
-            color: var(--accent-gold);
-            margin-bottom: 2rem;
-        }
-        
-        .cert-content {
-            text-align: center;
-            max-width: 800px;
-            margin: 2rem 0;
-        }
-        
-        .cert-text {
-            font-family: 'Inter', sans-serif;
-            font-size: 1.1rem;
-            color: #4b5563;
-            line-height: 1.8;
-            margin-bottom: 1.5rem;
-        }
-        
-        .cert-recipient {
-            font-family: 'Playfair Display', serif;
-            font-size: 3rem;
-            font-weight: 600;
-            color: var(--accent-navy);
-            margin: 1rem 0;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid var(--accent-gold);
-            display: inline-block;
-        }
-        
-        .cert-course {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.8rem;
-            font-weight: 600;
-            color: var(--accent-navy);
-            margin: 1rem 0;
-        }
-        
-        .cert-date {
-            font-family: 'Inter', sans-serif;
-            font-size: 1rem;
-            color: #6b7280;
-            margin-top: 2rem;
-        }
-        
-        .cert-footer {
-            position: absolute;
-            bottom: 60px;
-            left: 60px;
-            right: 60px;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-        }
-        
-        .signature-block {
-            text-align: center;
-        }
-        
-        .signature-line {
-            width: 200px;
-            height: 1px;
-            background: var(--accent-navy);
-            margin-bottom: 0.5rem;
-        }
-        
-        .signature-text {
-            font-family: 'Inter', sans-serif;
-            font-size: 0.9rem;
-            color: #4b5563;
-        }
-        
-        .qr-placeholder {
-            width: 100px;
-            height: 100px;
-            border: 2px solid var(--accent-gold);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.7rem;
-            color: var(--accent-gold);
-            text-align: center;
-            background: repeating-linear-gradient(
-                45deg,
-                transparent,
-                transparent 5px,
-                rgba(197, 160, 89, 0.1) 5px,
-                rgba(197, 160, 89, 0.1) 10px
-            );
-        }
-        
-        /* Loading & Progress */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            gap: 1rem;
-            z-index: 1000;
-        }
-        
-        .loading-overlay.active {
-            display: flex;
-        }
-        
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid var(--border-color);
-            border-top-color: var(--accent-gold);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .progress-bar {
-            width: 300px;
-            height: 6px;
-            background: var(--bg-input);
-            border-radius: 3px;
-            overflow: hidden;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: var(--accent-gold);
-            width: 0%;
-            transition: width 0.3s;
-        }
-        
-        .progress-text {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
-        
-        /* Responsive */
-        @media (max-width: 1200px) {
-            .app-container {
-                grid-template-columns: 320px 1fr;
-            }
-            .certificate {
-                transform: scale(0.6);
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            900: '#0B0F19',
+                            800: '#151B2B',
+                            700: '#1E293B',
+                            600: '#334155',
+                            500: '#475569',
+                        },
+                        accent: {
+                            primary: '#6366F1',
+                            secondary: '#8B5CF6',
+                            success: '#10B981',
+                            danger: '#EF4444',
+                            warning: '#F59E0B',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    }
+                }
             }
         }
-        
-        @media (max-width: 900px) {
-            .app-container {
-                grid-template-columns: 1fr;
-                grid-template-rows: auto 1fr;
-            }
-            .sidebar {
-                max-height: 50vh;
-            }
-            .certificate {
-                transform: scale(0.4);
-            }
-        }
-        
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: var(--bg-dark);
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: var(--border-color);
-            border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--accent-gold);
-        }
-        
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .animate-in {
-            animation: fadeIn 0.5s ease-out;
-        }
-    </style>
+    </script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-    <div class="app-container">
-        <!-- Sidebar Controls -->
-        <aside class="sidebar">
-            <div class="logo">
-                <div class="logo-icon">S</div>
-                <div class="logo-text">SALA Tech</div>
-            </div>
-            <p class="subtitle">Certificate Generator</p>
+<body class="bg-dark-900 text-white font-sans overflow-hidden">
+
+    <!-- Main Application Container -->
+    <div class="h-screen flex flex-col lg:flex-row">
+        
+        <!-- Left Sidebar: Controls -->
+        <aside class="w-full lg:w-96 bg-dark-800 border-r border-dark-600 flex flex-col overflow-hidden">
             
-            <div class="form-group">
-                <label for="recipientName">Recipient Name</label>
-                <input type="text" id="recipientName" placeholder="e.g. John Doe" autocomplete="off">
-            </div>
-            
-            <div class="form-group">
-                <label for="courseTitle">Course / Event Title</label>
-                <input type="text" id="courseTitle" placeholder="e.g. Advanced Web Development" autocomplete="off">
-            </div>
-            
-            <div class="form-group">
-                <label for="achievementDate">Achievement Date</label>
-                <input type="date" id="achievementDate">
-            </div>
-            
-            <div class="form-group">
-                <label for="orgLogo">Organization Logo</label>
-                <div class="file-input-wrapper">
-                    <input type="file" id="orgLogo" accept="image/*">
-                    <label for="orgLogo" class="file-input-label" id="logoLabel">
-                        <span>📁 Choose Logo File</span>
-                    </label>
+            <!-- Header -->
+            <div class="p-6 border-b border-dark-600 bg-gradient-to-r from-dark-800 to-dark-700">
+                <div class="flex items-center gap-3 mb-1">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-primary to-accent-secondary flex items-center justify-center text-white font-bold text-lg">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg tracking-tight">CertEngine</h1>
+                        <p class="text-xs text-slate-400">Enterprise Bulk Generator</p>
+                    </div>
                 </div>
             </div>
             
-            <div class="btn-group">
-                <button class="btn btn-primary" onclick="generatePDF()">
-                    <span>⬇️</span> Download PDF
-                </button>
-            </div>
-            
-            <div class="bulk-section">
-                <label>Bulk Generation (JSON/CSV)</label>
-                <textarea 
-                    class="bulk-textarea" 
-                    id="bulkData" 
-                    placeholder='[
-  {"name": "Alice Smith", "course": "React Mastery", "date": "2024-03-15"},
-  {"name": "Bob Jones", "course": "Node.js Advanced", "date": "2024-03-16"}
-]'
-                ></textarea>
-                <p class="hint">Paste JSON array or CSV: name,course,date</p>
-                <button class="btn btn-secondary" onclick="processBulkUpload()" style="margin-top: 0.75rem;">
-                    <span>📦</span> Generate Bulk ZIP
-                </button>
+            <!-- Scrollable Controls -->
+            <div class="flex-1 overflow-y-auto p-6 space-y-6">
+                
+                <!-- Template Section -->
+                <div class="space-y-3">
+                    <div class="flex items-center gap-2 text-sm font-semibold text-slate-300 uppercase tracking-wider">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        Template
+                    </div>
+                    
+                    <div class="relative group">
+                        <input type="file" id="templateUpload" accept="image/png,image/jpeg,image/jpg" class="hidden">
+                        <label for="templateUpload" id="templateLabel" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-dark-500 rounded-xl bg-dark-700/50 cursor-pointer hover:border-accent-primary hover:bg-dark-700 transition-all">
+                            <svg class="w-8 h-8 text-slate-400 mb-2 group-hover:text-accent-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                            </svg>
+                            <span class="text-sm text-slate-400 group-hover:text-slate-300">Upload Certificate Template</span>
+                            <span class="text-xs text-slate-500 mt-1">PNG, JPG • High resolution</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Text Configuration -->
+                <div class="space-y-3">
+                    <div class="flex items-center gap-2 text-sm font-semibold text-slate-300 uppercase tracking-wider">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                        Text Configuration
+                    </div>
+                    
+                    <div class="glass-panel rounded-xl p-4 space-y-4">
+                        <!-- Font Family -->
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1.5">Font Family</label>
+                            <select id="fontFamily" class="w-full bg-dark-900 border border-dark-500 rounded-lg px-3 py-2 text-sm focus:border-accent-primary focus:outline-none transition-colors">
+                                <option value="'Playfair Display', serif">Playfair Display</option>
+                                <option value="'Great Vibes', cursive">Great Vibes (Script)</option>
+                                <option value="'Alex Brush', cursive">Alex Brush (Script)</option>
+                                <option value="'Allura', cursive">Allura (Script)</option>
+                                <option value="'Cinzel', serif">Cinzel (Elegant)</option>
+                                <option value="'Montserrat', sans-serif">Montserrat</option>
+                                <option value="'Inter', sans-serif">Inter (Modern)</option>
+                                <option value="'Noto Sans Khmer', sans-serif" class="font-khmer">Noto Sans Khmer (ខ្មែរ)</option>
+                                <option value="'Noto Serif Khmer', serif" class="font-khmer">Noto Serif Khmer (ខ្មែរ)</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Font Size & Color -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1.5">Size (px)</label>
+                                <input type="number" id="fontSize" value="72" min="12" max="200" class="w-full bg-dark-900 border border-dark-500 rounded-lg px-3 py-2 text-sm focus:border-accent-primary focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1.5">Color</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="color" id="fontColor" value="#1e293b" class="w-10 h-9 rounded cursor-pointer bg-transparent border-0 p-0">
+                                    <input type="text" id="colorHex" value="#1e293b" class="flex-1 bg-dark-900 border border-dark-500 rounded-lg px-3 py-2 text-sm font-mono uppercase">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Style & Weight -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1.5">Style</label>
+                                <select id="fontStyle" class="w-full bg-dark-900 border border-dark-500 rounded-lg px-3 py-2 text-sm">
+                                    <option value="normal">Normal</option>
+                                    <option value="italic">Italic</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1.5">Weight</label>
+                                <select id="fontWeight" class="w-full bg-dark-900 border border-dark-500 rounded-lg px-3 py-2 text-sm">
+                                    <option value="400">Regular</option>
+                                    <option value="600">Semi Bold</option>
+                                    <option value="700">Bold</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Data Input -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2 text-sm font-semibold text-slate-300 uppercase tracking-wider">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            Recipients Data
+                        </div>
+                        <span id="dataCount" class="text-xs bg-accent-primary/20 text-accent-primary px-2 py-0.5 rounded-full">0 entries</span>
+                    </div>
+                    
+                    <div class="glass-panel rounded-xl p-4 space-y-3">
+                        <div class="flex gap-2">
+                            <button id="jsonModeBtn" class="flex-1 py-1.5 px-3 rounded-lg bg-accent-primary text-white text-xs font-medium transition-colors">JSON</button>
+                            <button id="csvModeBtn" class="flex-1 py-1.5 px-3 rounded-lg bg-dark-600 text-slate-300 text-xs font-medium hover:bg-dark-500 transition-colors">CSV</button>
+                        </div>
+                        
+                        <textarea id="dataInput" placeholder='[{"name": "Lee Uttam"}, {"name": "លី ឧត្តម"}, {"name": "John Smith"}]' class="w-full h-32 bg-dark-900 border border-dark-500 rounded-lg p-3 text-xs font-mono focus:border-accent-primary focus:outline-none resize-none"></textarea>
+                        
+                        <div class="flex items-center gap-2">
+                            <input type="file" id="csvUpload" accept=".csv,.txt" class="hidden">
+                            <label for="csvUpload" class="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white cursor-pointer transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                                </svg>
+                                Upload CSV
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action -->
+                <div class="pt-4 border-t border-dark-600">
+                    <button id="generateBtn" disabled class="w-full py-3 px-4 bg-gradient-to-r from-accent-primary to-accent-secondary rounded-xl font-semibold text-white shadow-lg shadow-accent-primary/25 hover:shadow-accent-primary/40 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none transition-all flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                        Generate & Download ZIP
+                    </button>
+                    <p class="text-center text-xs text-slate-500 mt-2">Supports Khmer Unicode • Retina Quality</p>
+                </div>
             </div>
         </aside>
         
-        <!-- Preview Area -->
-        <main class="preview-container">
-            <div class="preview-wrapper" id="previewWrapper">
-                <div class="certificate" id="certificate">
-                    <div class="cert-border"></div>
-                    <div class="corner corner-tl"></div>
-                    <div class="corner corner-tr"></div>
-                    <div class="corner corner-bl"></div>
-                    <div class="corner corner-br"></div>
-                    
-                    <div class="cert-header">
-                        <img src="" alt="" class="cert-logo" id="certLogo" style="display: none;">
-                        <div class="cert-org-name" id="certOrgName" style="display: none;">SALA TECH</div>
-                        <h1 class="cert-title">Certificate</h1>
-                        <p class="cert-subtitle">of Achievement</p>
+        <!-- Right Panel: Preview -->
+        <main class="flex-1 flex flex-col checkerboard relative overflow-hidden">
+            
+            <!-- Toolbar -->
+            <div class="h-16 glass-panel border-b border-dark-600 flex items-center justify-between px-6 z-10">
+                <div class="flex items-center gap-3">
+                    <span class="text-sm font-medium text-slate-300">Live Preview</span>
+                    <span id="previewStatus" class="text-xs px-2 py-1 rounded-full bg-dark-700 text-slate-400 border border-dark-500">Waiting for template...</span>
+                </div>
+                
+                <div class="flex items-center gap-4 text-xs text-slate-400">
+                    <div class="flex items-center gap-1.5">
+                        <div class="w-2 h-2 rounded-full bg-accent-success animate-pulse"></div>
+                        <span>Drag tag to position</span>
                     </div>
+                </div>
+            </div>
+            
+            <!-- Preview Canvas -->
+            <div class="flex-1 flex items-center justify-center p-8 overflow-auto">
+                <div id="previewContainer" class="relative shadow-2xl rounded-lg overflow-hidden bg-white" style="display: none;">
+                    <img id="previewImage" class="max-w-full max-h-[70vh] object-contain" alt="Template">
                     
-                    <div class="cert-content">
-                        <p class="cert-text">This is to certify that</p>
-                        <div class="cert-recipient" id="certRecipient">Recipient Name</div>
-                        <p class="cert-text">has successfully completed</p>
-                        <div class="cert-course" id="certCourse">Course Title</div>
-                        <p class="cert-date" id="certDate">Date</p>
-                    </div>
-                    
-                    <div class="cert-footer">
-                        <div class="signature-block">
-                            <div class="signature-line"></div>
-                            <p class="signature-text">Authorized Signature</p>
-                        </div>
-                        <div class="qr-placeholder">
-                            VERIFY<br>QR CODE
+                    <!-- Draggable Name Tag -->
+                    <div id="draggableTag" class="draggable-tag absolute transform -translate-x-1/2 -translate-y-1/2 px-4 py-2 bg-white/90 backdrop-blur rounded-lg border-2 border-accent-primary/50 shadow-lg" style="left: 50%; top: 50%;">
+                        <span id="tagText" class="text-2xl whitespace-nowrap" style="font-family: 'Playfair Display', serif;">Drag Me</span>
+                        <div class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs text-accent-primary font-medium whitespace-nowrap opacity-0 hover:opacity-100 transition-opacity">
+                            Position: <span id="positionDisplay">50%, 50%</span>
                         </div>
                     </div>
+                </div>
+                
+                <!-- Empty State -->
+                <div id="emptyState" class="text-center">
+                    <div class="w-24 h-24 mx-auto mb-4 rounded-2xl bg-dark-800 border border-dark-600 flex items-center justify-center">
+                        <svg class="w-12 h-12 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-slate-300 mb-1">No Template Loaded</h3>
+                    <p class="text-sm text-slate-500 max-w-xs">Upload a certificate template to begin positioning the name tag</p>
                 </div>
             </div>
         </main>
     </div>
     
-    <!-- Loading Overlay -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="spinner"></div>
-        <div class="progress-bar">
-            <div class="progress-fill" id="progressFill"></div>
+    <!-- Progress Modal -->
+    <div id="progressModal" class="fixed inset-0 bg-dark-900/90 backdrop-blur-sm z-50 hidden items-center justify-center">
+        <div class="bg-dark-800 border border-dark-600 rounded-2xl p-8 w-full max-w-md shadow-2xl">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-accent-primary to-accent-secondary flex items-center justify-center">
+                    <svg class="w-8 h-8 text-white animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold mb-1">Generating Certificates</h3>
+                <p class="text-sm text-slate-400" id="progressDetail">Initializing...</p>
+            </div>
+            
+            <!-- Progress Bar -->
+            <div class="mb-4">
+                <div class="flex justify-between text-xs mb-2">
+                    <span class="text-slate-400" id="progressText">0 of 0</span>
+                    <span class="text-accent-primary font-semibold" id="progressPercent">0%</span>
+                </div>
+                <div class="h-2 bg-dark-700 rounded-full overflow-hidden">
+                    <div id="progressBar" class="h-full bg-gradient-to-r from-accent-primary to-accent-secondary rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+            
+            <!-- Current Name -->
+            <div class="bg-dark-700/50 rounded-lg p-3 mb-4 border border-dark-600">
+                <span class="text-xs text-slate-500 uppercase tracking-wider">Processing</span>
+                <p id="currentName" class="text-lg font-medium text-white truncate mt-0.5">-</p>
+            </div>
+            
+            <div class="flex gap-3">
+                <button id="cancelBtn" class="flex-1 py-2.5 px-4 rounded-xl bg-dark-700 hover:bg-dark-600 text-slate-300 font-medium transition-colors">
+                    Cancel
+                </button>
+                <button id="doneBtn" class="hidden flex-1 py-2.5 px-4 rounded-xl bg-accent-success hover:bg-emerald-600 text-white font-medium transition-colors flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                    Download ZIP
+                </button>
+            </div>
         </div>
-        <p class="progress-text" id="progressText">Generating certificate...</p>
+    </div>
+    
+    <!-- Hidden Offscreen Renderer -->
+    <div id="offscreenRenderer" class="offscreen-renderer bg-white">
+        <div id="offscreenName" class="absolute transform -translate-x-1/2 -translate-y-1/2 whitespace-nowrap" style="left: 50%; top: 50%; font-family: 'Playfair Display', serif; font-size: 72px; color: #1e293b;">
+            Name
+        </div>
     </div>
 
-    <script>
-        // State management
-        const state = {
-            recipient: '',
-            course: '',
-            date: '',
-            logo: null,
-            logoDataUrl: null
-        };
-        
-        // Debounce utility
-        function debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
-        }
-        
-        // DOM Elements
-        const inputs = {
-            recipient: document.getElementById('recipientName'),
-            course: document.getElementById('courseTitle'),
-            date: document.getElementById('achievementDate'),
-            logo: document.getElementById('orgLogo'),
-            bulk: document.getElementById('bulkData')
-        };
-        
-        const display = {
-            recipient: document.getElementById('certRecipient'),
-            course: document.getElementById('certCourse'),
-            date: document.getElementById('certDate'),
-            logo: document.getElementById('certLogo'),
-            orgName: document.getElementById('certOrgName'),
-            logoLabel: document.getElementById('logoLabel')
-        };
-        
-        // Update preview with debounce
-        const updatePreview = debounce(() => {
-            state.recipient = inputs.recipient.value || 'Recipient Name';
-            state.course = inputs.course.value || 'Course Title';
-            state.date = inputs.date.value ? formatDate(inputs.date.value) : 'Date';
-            
-            display.recipient.textContent = state.recipient;
-            display.course.textContent = state.course;
-            display.date.textContent = state.date;
-        }, 150);
-        
-        // Format date nicely
-        function formatDate(dateString) {
-            const options = { year: 'numeric', month: 'long', day: 'numeric' };
-            return new Date(dateString).toLocaleDateString('en-US', options);
-        }
-        
-        // Event listeners for real-time updates
-        inputs.recipient.addEventListener('input', updatePreview);
-        inputs.course.addEventListener('input', updatePreview);
-        inputs.date.addEventListener('change', updatePreview);
-        
-        // Logo upload handler
-        inputs.logo.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    state.logoDataUrl = event.target.result;
-                    display.logo.src = state.logoDataUrl;
-                    display.logo.style.display = 'block';
-                    display.orgName.style.display = 'block';
-                    display.logoLabel.classList.add('has-file');
-                    display.logoLabel.innerHTML = `<span>✓ ${file.name}</span>`;
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-        
-        // Generate single PDF
-        async function generatePDF() {
-            const overlay = document.getElementById('loadingOverlay');
-            const cert = document.getElementById('certificate');
-            
-            overlay.classList.add('active');
-            
-            try {
-                // Wait for fonts to load
-                await document.fonts.ready;
-                
-                // Capture with html2canvas
-                const canvas = await html2canvas(cert, {
-                    scale: 2,
-                    useCORS: true,
-                    allowTaint: true,
-                    backgroundColor: '#ffffff',
-                    logging: false,
-                    width: 1123,
-                    height: 794
-                });
-                
-                // Create PDF (A4 Landscape: 297mm x 210mm)
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF({
-                    orientation: 'landscape',
-                    unit: 'mm',
-                    format: 'a4'
-                });
-                
-                const imgData = canvas.toDataURL('image/png');
-                const pdfWidth = 297;
-                const pdfHeight = 210;
-                
-                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-                
-                // Generate filename
-                const fileName = `Certificate_${state.recipient.replace(/\s+/g, '_')}_${Date.now()}.pdf`;
-                pdf.save(fileName);
-                
-            } catch (error) {
-                console.error('Error generating PDF:', error);
-                alert('Error generating PDF. Please try again.');
-            } finally {
-                overlay.classList.remove('active');
-            }
-        }
-        
-        // Parse bulk data (JSON or CSV)
-        function parseBulkData(text) {
-            text = text.trim();
-            if (!text) return [];
-            
-            // Try JSON first
-            try {
-                const json = JSON.parse(text);
-                if (Array.isArray(json)) return json;
-            } catch (e) {
-                // Not JSON, try CSV
-            }
-            
-            // Parse CSV
-            const lines = text.split('\n').filter(line => line.trim());
-            if (lines.length < 2) return [];
-            
-            const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
-            const results = [];
-            
-            for (let i = 1; i < lines.length; i++) {
-                const values = lines[i].split(',').map(v => v.trim());
-                const obj = {};
-                headers.forEach((header, index) => {
-                    obj[header] = values[index] || '';
-                });
-                results.push(obj);
-            }
-            
-            return results;
-        }
-        
-        // Process bulk upload
-        async function processBulkUpload() {
-            const data = parseBulkData(inputs.bulk.value);
-            
-            if (data.length === 0) {
-                alert('No valid data found. Please check your JSON/CSV format.');
-                return;
-            }
-            
-            if (data.length > 50) {
-                alert('Maximum 50 certificates allowed per batch for performance.');
-                return;
-            }
-            
-            const overlay = document.getElementById('loadingOverlay');
-            const progressFill = document.getElementById('progressFill');
-            const progressText = document.getElementById('progressText');
-            
-            overlay.classList.add('active');
-            
-            const zip = new JSZip();
-            const folder = zip.folder("certificates");
-            
-            try {
-                for (let i = 0; i < data.length; i++) {
-                    const item = data[i];
-                    const progress = ((i + 1) / data.length) * 100;
-                    
-                    progressFill.style.width = `${progress}%`;
-                    progressText.textContent = `Generating certificate ${i + 1} of ${data.length}...`;
-                    
-                    // Update certificate data
-                    display.recipient.textContent = item.name || item.recipient || 'Unknown';
-                    display.course.textContent = item.course || item.title || 'Course';
-                    display.date.textContent = item.date ? formatDate(item.date) : formatDate(new Date());
-                    
-                    // Small delay to allow DOM update
-                    await new Promise(resolve => setTimeout(resolve, 50));
-                    
-                    // Generate canvas
-                    const canvas = await html2canvas(document.getElementById('certificate'), {
-                        scale: 2,
-                        useCORS: true,
-                        backgroundColor: '#ffffff',
-                        logging: false
-                    });
-                    
-                    // Convert to blob
-                    const blob = await new Promise(resolve => {
-                        canvas.toBlob(resolve, 'image/png');
-                    });
-                    
-                    // Add to ZIP
-                    const fileName = `Certificate_${(item.name || item.recipient || 'Unknown').replace(/\s+/g, '_')}.png`;
-                    folder.file(fileName, blob);
-                }
-                
-                progressText.textContent = 'Creating ZIP archive...';
-                
-                // Generate ZIP
-                const content = await zip.generateAsync({
-                    type: 'blob',
-                    compression: 'DEFLATE',
-                    compressionOptions: { level: 6 }
-                });
-                
-                // Download
-                const zipName = `Certificates_Batch_${Date.now()}.zip`;
-                saveAs(content, zipName);
-                
-                // Reset preview to current form values
-                updatePreview();
-                
-            } catch (error) {
-                console.error('Error in bulk generation:', error);
-                alert('Error generating bulk certificates. Please try again.');
-            } finally {
-                overlay.classList.remove('active');
-                progressFill.style.width = '0%';
-            }
-        }
-        
-        // Initialize with today's date
-        inputs.date.valueAsDate = new Date();
-        updatePreview();
-        
-        // Keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey || e.metaKey) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    generatePDF();
-                }
-            }
-        });
-    </script>
+    <!-- Application JavaScript -->
+    <script src="app.js"></script>
 </body>
 </html>
